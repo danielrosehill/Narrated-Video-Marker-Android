@@ -252,7 +252,6 @@ class MainActivity : ComponentActivity() {
 
     private fun writeSidecar(duration: Double?) {
         val doc = marksDoc ?: return
-        val res = videoCapture?.resolutionInfo
         val json = JSONObject()
             .put("format", "narrated-video-marks")
             .put("version", 1)
@@ -262,9 +261,8 @@ class MainActivity : ComponentActivity() {
             .put("duration", duration ?: JSONObject.NULL)
             .put("clock", "recorded-duration")
             .put("capture", JSONObject()
-                .put("width", res?.resolution?.width ?: JSONObject.NULL)
-                .put("height", res?.resolution?.height ?: JSONObject.NULL)
-                .put("rotation_degrees", res?.rotationDegrees ?: JSONObject.NULL))
+                .put("quality", "HD")
+                .put("target_rotation_degrees", rotationDegrees()))
             .put("app", JSONObject().put("id", packageName).put("version", appVersion()))
             .put("marks", JSONArray(marks.map { JSONObject(it.toString()) }))
         try {
@@ -272,6 +270,10 @@ class MainActivity : ComponentActivity() {
         } catch (e: Exception) {
             toast("Could not write marks: ${e.message}")
         }
+    }
+
+    private fun rotationDegrees(): Int = when (videoCapture?.targetRotation) {
+        Surface.ROTATION_90 -> 90; Surface.ROTATION_180 -> 180; Surface.ROTATION_270 -> 270; else -> 0
     }
 
     private fun appVersion(): String =
